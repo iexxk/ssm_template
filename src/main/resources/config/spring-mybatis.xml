@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+    <!--加载jdbc文件-->
+    <context:property-placeholder location="classpath:config/jdbc-mysql.properties"/>
+    <!-- 配置数据源 -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driverClassName}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <!-- 配置Session工厂 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 加载mybatis-config.xml文件，mybatis配置文件路径 -->
+        <property name="configLocation" value=""/>
+        <!--自动扫描需要定义类别名的包，将包内的JAVA类的类名作为类别名-->
+        <property name="typeAliasesPackage" value="com.xuan.model"/>
+
+        <!-- 指定实体类映射文件，可以指定同时指定某一包以及子包下面的所有配置文件，可以直接指定文件 -->
+        <property name="mapperLocations" value="classpath:sqlMapper/*.xml"/>
+    </bean>
+
+    <!--动态代理实现 不用写dao的实现 -->
+    <bean id="mapperScannerConfigurer" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 这里的basePackage 指定了dao层接口路劲，这里的dao接口不用自己实现 -->
+        <property name="basePackage" value="com.xuan.dao"/>
+        <!-- 如果只有一个数据源的话可以不用指定，但是如果有多个数据源的话必须要指定 -->
+        <!-- <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" /> -->
+        <!--直接指定了sqlsessionTemplate名称，这个和上面的其实是一样的 -->
+        <!-- <property name="sqlSessionTemplateBeanName" value="sqlSession" /> -->
+    </bean>
+
+    <!-- 配置事务管理器 -->
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+
+    <!-- 使用全注释事务 -->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+</beans>
